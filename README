@@ -1,0 +1,5 @@
+This is an opencv program that implements various graph search methods. This was inspired by the work being doone in this repository: https://github.com/qiao/PathFinding.js
+
+This is a work in progress. Graph searching hasn't been implemented yet. It will be added soon.
+
+Look out for updates in this README.
