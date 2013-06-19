@@ -17,6 +17,8 @@ using namespace cv;
 Point clickpoint(1,1);
 Point initialPos(1,1);
 Point goalPoint(1,1);
+int homeFlag = 0;
+int destinationFlag = 0;
 
 class imageCell
 {
@@ -31,8 +33,13 @@ class imageCell
     void setGridLoc(int row, int col);
     void setGridLoc(Point gridLoc);
 
-    ///Fill a cell with white
+    ///Fill a cell with specified color
     void fillCell(int R, int G, int B);
+
+    ///Check for obstacles
+    bool isCellBlocked(Point gridLoc);
+    ///Check is destination reached
+    bool isCellGoal(Point gridLoc);
 
     private:
     Mat img;
@@ -97,6 +104,37 @@ void imageCell::fillCell(int R, int G, int B)
     }
 }
 
+bool imageCell::isCellBlocked(Point gridLoc)
+{
+    if((img.at<Vec3b>(gridLoc.y,gridLoc.x)[0]==0)&&
+        (img.at<Vec3b>(gridLoc.y,gridLoc.x)[1]==0)&&
+        (img.at<Vec3b>(gridLoc.y,gridLoc.x)[2]==255)) return true;
+        else return false;
+}
+
+bool imageCell::isCellGoal(Point gridLoc)
+{
+    if((img.at<Vec3b>(gridLoc.y,gridLoc.x)[0]==0)&&
+        (img.at<Vec3b>(gridLoc.y,gridLoc.x)[1]==255)&&
+        (img.at<Vec3b>(gridLoc.y,gridLoc.x)[2]==0)) return true;
+        else return false;
+}
+
+///Pathfinder class
+class Pathfinder
+{
+    public:
+
+    private:
+    Point currentPos;
+    std::vector<Point> frontier;
+    std::vector<Point> explored;
+    int estim_goal; int path_cost;
+    int heuristic;
+
+};
+
+
 ///The mousecallback function
 void mouseEvent(int event, int x, int y, int flags, void *param)
 {
@@ -111,13 +149,24 @@ void mouseEvent(int event, int x, int y, int flags, void *param)
         cout<<"\nX: "<<x<<" Y: "<<y;
     }
 
-    if((event==EVENT_LBUTTONDOWN) && (flags==EVENT_FLAG_CTRLKEY))
+    if((event==EVENT_LBUTTONDOWN) && (homeFlag==1))
     {
         cellptr->setGridLoc(initialPos.y, initialPos.x);
         cellptr->fillCell(255, 255, 255);
         cellptr->setGridLoc(cellptr->pixToGrid(y,x));
         cellptr->fillCell(255, 0, 0);
         initialPos = cellptr->pixToGrid(y,x);
+        homeFlag = 0;
+    }
+
+    if((event==EVENT_LBUTTONDOWN)&&(destinationFlag==1))
+    {
+        cellptr->setGridLoc(goalPoint.y, goalPoint.x);
+        cellptr->fillCell(255, 255, 255);
+        cellptr->setGridLoc(cellptr->pixToGrid(y,x));
+        cellptr->fillCell(0, 255, 0);
+        goalPoint = cellptr->pixToGrid(y,x);
+        destinationFlag = 0;
     }
 }
 
@@ -154,6 +203,8 @@ int main(int argc, char** argv)
         keypress = waitKey(30);
 
         if(keypress==27) break;
+        if(keypress=='h') homeFlag = 1;
+        if(keypress=='d') destinationFlag = 1;
     }
 
 
