@@ -4,6 +4,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <math.h>
 #include <SerialStream.h>
 #include "string.h"
 //#include <system>
@@ -40,6 +41,8 @@ class imageCell
     bool isCellBlocked(Point gridLoc);
     ///Check is destination reached
     bool isCellGoal(Point gridLoc);
+    ///Get distance between two grid points
+    int getDirectDistance(Point gridPoint1, Point gridPoint2);
 
     private:
     Mat img;
@@ -104,20 +107,27 @@ void imageCell::fillCell(int R, int G, int B)
     }
 }
 
+///These functions need to be modified. Take care.
 bool imageCell::isCellBlocked(Point gridLoc)
 {
-    if((img.at<Vec3b>(gridLoc.y,gridLoc.x)[0]==0)&&
-        (img.at<Vec3b>(gridLoc.y,gridLoc.x)[1]==0)&&
-        (img.at<Vec3b>(gridLoc.y,gridLoc.x)[2]==255)) return true;
+    if((img.at<Vec3b>((gridLoc.y*cell_length)+6,(gridLoc.x*cell_length)+6)[0]==0)&&
+        (img.at<Vec3b>((gridLoc.y*cell_length)+6,(gridLoc.x*cell_length)+6)[1]==0)&&
+        (img.at<Vec3b>((gridLoc.y*cell_length)+6,(gridLoc.x*cell_length)+6)[2]==255)) return true;
         else return false;
 }
 
 bool imageCell::isCellGoal(Point gridLoc)
 {
-    if((img.at<Vec3b>(gridLoc.y,gridLoc.x)[0]==0)&&
-        (img.at<Vec3b>(gridLoc.y,gridLoc.x)[1]==255)&&
-        (img.at<Vec3b>(gridLoc.y,gridLoc.x)[2]==0)) return true;
+    if((img.at<Vec3b>((gridLoc.y*cell_length)+6,(gridLoc.x*cell_length)+6)[0]==0)&&
+        (img.at<Vec3b>((gridLoc.y*cell_length)+6,(gridLoc.x*cell_length)+6)[1]==255)&&
+        (img.at<Vec3b>((gridLoc.y*cell_length)+6,(gridLoc.x*cell_length)+6)[2]==0)) return true;
         else return false;
+}
+
+int imageCell::getDirectDistance(Point gridPoint1, Point gridPoint2)
+{
+    Point delta = gridPoint2 - gridPoint1;
+    return (int)sqrt(pow(delta.x, 2) + pow(delta.y, 2));
 }
 
 ///Pathfinder class
@@ -140,7 +150,7 @@ void mouseEvent(int event, int x, int y, int flags, void *param)
 {
     imageCell *cellptr = (imageCell*) param;
 
-    if(event == EVENT_LBUTTONDOWN )
+    if(event==EVENT_LBUTTONDOWN )
     {
         clickpoint.x = x;
         clickpoint.y = y;
@@ -210,3 +220,4 @@ int main(int argc, char** argv)
 
     return 0;
 }
+
